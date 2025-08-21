@@ -1,26 +1,13 @@
 import streamlit as st
-import gdown
-import os
-import zipfile
 import torch
 from transformers import BertTokenizer, BertForSequenceClassification
 
-# --- Download file model ---
-MODEL_ID = "1RuK0hMeWKCPi2t0H5Nz5JfRMJZ0Ti_uR"
+# Nama model di Hugging Face
+MODEL_NAME = "rhalv/bert-review-detection"  
 
-if not os.path.exists("bert_model"):
-    url = f"https://drive.google.com/uc?id={MODEL_ID}"
-    gdown.download(url, "bert_model.zip", quiet=False)
-
-    with zipfile.ZipFile("bert_model.zip", 'r') as zip_ref:
-        zip_ref.extractall(".")
-
-# --- Load model & tokenizer ---
-tokenizer = BertTokenizer.from_pretrained("bert_model")
-model = BertForSequenceClassification.from_pretrained(
-    "bert_model", 
-    device_map="cpu"   
-)
+# Load tokenizer & model langsung dari HF Hub
+tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+model = BertForSequenceClassification.from_pretrained(MODEL_NAME)
 
 # --- Streamlit UI ---
 st.title("Fake Review Detector (BERT)")
@@ -45,3 +32,4 @@ if st.button("Prediksi"):
 
         label = "Asli" if pred == 1 else "Palsu"  # sesuaikan label kamu
         st.success(f"**Hasil Prediksi:** {label}")
+
