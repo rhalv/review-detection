@@ -11,7 +11,7 @@ def download_file(file_id, output):
         gdown.download(url, output, quiet=False)
 
 # === GANTI DENGAN FILE ID DRIVE KAMU ===
-MODEL_ID = "1X35DNiwVgVa9bE1JmKzzvLfyug5-3qhS"           
+MODEL_ID = "1X35DNiwVgVa9bE1JmKzzvLfyug5-3qhS"           # contoh: "1aBcdEfGhijkLmNoPqrSTuvWxYz"
 TOKENIZER_ID = "1XSeoSA7GtMZCS3kYLNHPQx1pFY17sRFz"
 LABEL_ENCODER_ID = "1EMNfLYqlzw690arl5DXHYBsraAO1iknX"
 
@@ -21,7 +21,7 @@ download_file(TOKENIZER_ID, "tokenizer.pkl")
 download_file(LABEL_ENCODER_ID, "label_encoder.pkl")
 
 # --- Load semua objek ---
-model = joblib.load("model.pkl")
+model = torch.load("model.pkl", map_location=torch.device("cpu"))
 tokenizer = joblib.load("tokenizer.pkl")
 label_encoder = joblib.load("label_encoder.pkl")
 
