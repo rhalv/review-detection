@@ -1,6 +1,5 @@
 streamlit
 transformers
 torch
+safetensors
 gdown
-joblib
-scikit-learn
