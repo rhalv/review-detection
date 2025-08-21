@@ -1,29 +1,26 @@
 import streamlit as st
-import joblib
 import gdown
 import os
+import zipfile
 import torch
+from transformers import BertTokenizer, BertForSequenceClassification
 
-# --- Fungsi download dari Google Drive ---
-def download_file(file_id, output):
-    if not os.path.exists(output):
-        url = f"https://drive.google.com/uc?id={file_id}"
-        gdown.download(url, output, quiet=False)
+# --- Download file model ---
+MODEL_ID = "1RuK0hMeWKCPi2t0H5Nz5JfRMJZ0Ti_uR"
 
-# === GANTI DENGAN FILE ID DRIVE KAMU ===
-MODEL_ID = "1X35DNiwVgVa9bE1JmKzzvLfyug5-3qhS"           # contoh: "1aBcdEfGhijkLmNoPqrSTuvWxYz"
-TOKENIZER_ID = "1XSeoSA7GtMZCS3kYLNHPQx1pFY17sRFz"
-LABEL_ENCODER_ID = "1EMNfLYqlzw690arl5DXHYBsraAO1iknX"
+if not os.path.exists("bert_model"):
+    url = f"https://drive.google.com/uc?id={MODEL_ID}"
+    gdown.download(url, "bert_model.zip", quiet=False)
 
-# --- Download semua file jika belum ada ---
-download_file(MODEL_ID, "model.pkl")
-download_file(TOKENIZER_ID, "tokenizer.pkl")
-download_file(LABEL_ENCODER_ID, "label_encoder.pkl")
+    with zipfile.ZipFile("bert_model.zip", 'r') as zip_ref:
+        zip_ref.extractall(".")
 
-# --- Load semua objek ---
-model = torch.load("model.pkl", map_location=torch.device("cpu"))
-tokenizer = joblib.load("tokenizer.pkl")
-label_encoder = joblib.load("label_encoder.pkl")
+# --- Load model & tokenizer ---
+tokenizer = BertTokenizer.from_pretrained("bert_model")
+model = BertForSequenceClassification.from_pretrained(
+    "bert_model", 
+    device_map="cpu"   
+)
 
 # --- Streamlit UI ---
 st.title("Fake Review Detector (BERT)")
@@ -34,7 +31,6 @@ if st.button("Prediksi"):
     if user_input.strip() == "":
         st.warning("Masukkan teks terlebih dahulu!")
     else:
-        # Tokenisasi input
         inputs = tokenizer(
             user_input,
             return_tensors="pt",
@@ -43,12 +39,9 @@ if st.button("Prediksi"):
             max_length=128
         )
 
-        # Prediksi
         with torch.no_grad():
             outputs = model(**inputs)
             pred = outputs.logits.argmax(dim=1).item()
 
-        # Konversi ke label asli
-        label = label_encoder.inverse_transform([pred])[0]
-
+        label = "Asli" if pred == 1 else "Palsu"  # sesuaikan label kamu
         st.success(f"**Hasil Prediksi:** {label}")
